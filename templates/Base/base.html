@@ -1,0 +1,69 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zxx">
+	<head>
+		<meta charset="utf-8" />
+        <title>{% block title %}Kumo- Django Fashion eCommerce Template{% endblock %}</title>
+		{% block meta %}
+		<meta name="author" content="Shreethemes" />
+		<meta content="Fashion eCommerce Template" name="description" />
+        <meta content="Fashion,eCommerce" name="keywords" />
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="website" content="https://shreethemes.in" />
+        <meta name="email" content="support@shreethemes.in" />
+        <meta name="version" content="1.0.0" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="csrf-token" content="{{ csrf_token }}">
+		{% endblock %}
+		
+        <link rel="icon" href="{% static 'app/img/favicon.ico' %}" type="image/gif" sizes="18x18">
+		 
+        <!-- Custom CSS -->
+        <link href="{% static 'app/css/styles.css' %}" rel="stylesheet">
+
+        <link href="https://cdn.jsdelivr.net/npm/@mdi/font/css/materialdesignicons.min.css" rel="stylesheet">
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+		{% block css %}{% endblock %}
+		
+    </head>
+	
+    <body>
+	
+       <div class="preloader"></div>
+		
+        <div id="main-wrapper">
+
+            <main>
+				{% block hero_content %}
+					{{ hero_content}}
+				{% endblock %}
+			</main>
+
+			<a id="back2Top" class="top-scroll" title="Back to top" href="#"><i class="ti-arrow-up"></i></a>
+
+        </div>
+
+		<!-- All Jquery -->
+		<script src="{% static 'app/js/jquery.min.js' %}"></script>
+		<script src="{% static 'app/js/popper.min.js' %}"></script>
+		<script src="{% static 'app/js/bootstrap.min.js' %}"></script>
+		<script src="{% static 'app/js/ion.rangeSlider.min.js' %}"></script>
+		<script src="{% static 'app/js/slick.js' %}"></script>
+		<script src="https://unpkg.com/wicg-inert@3.1.1/dist/inert.min.js"></script>
+		<script src="{% static 'app/js/slider-bg.js' %}"></script>
+		<script src="{% static 'app/js/lightbox.js' %}"></script> 
+		<script src="{% static 'app/js/smoothproducts.js' %}"></script>
+		<script src="{% static 'app/js/snackbar.min.js' %}"></script>
+		<script src="{% static 'app/js/jQuery.style.switcher.js' %}"></script>
+		<script src="{% static 'app/js/custom.js' %}"></script>
+		<script src="{% static 'app/js/popup.js' %}"></script>
+		<script src="{% static 'app/js/main.js' %}"></script>
+		<script src="{% static 'app/js/base.js' %}"></script>
+		<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+		{% block js %}{% endblock %}
+
+		<!-- This page plugins -->
+
+	</body>
+</html>

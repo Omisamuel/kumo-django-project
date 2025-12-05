@@ -1,0 +1,74 @@
+from App.models import Blog
+from django.utils.text import slugify
+
+# Define the blog data
+blogs = [
+        {
+            'id' : 1,
+            'img' : '/static/app/img/bl-1.png',
+            'date' : '26 Sep 2025',
+            'title' : "Let's start bring sale on this saummer vacation.",
+            'desc' : "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis",
+        },
+        {
+            'id' : 2,
+            'img' : '/static/app/img/bl-2.png',
+            'date' : '17 July 2025',
+            'title' : "collect moments, not things",
+            'desc' : "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis",
+        },
+        {
+            'id' : 3,
+            'img' : '/static/app/img/bl-3.png',
+            'date' : '10 Aug 2025',
+            'title' : "Always take the scenic route",
+            'desc' : "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis",
+        },
+        {
+            'id' : 4,
+            'img' : '/static/app/img/a-8.png',
+            'date' : '26 Sep 2025',
+            'title' : "Collecting Memories",
+            'desc' : "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis",
+        },
+        {
+            'id' : 5,
+            'img' : '/static/app/img/a-9.png',
+            'date' : '17 July 2025',
+            'title' : "Focus on Experiences",
+            'desc' : "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis",
+        },
+        {
+            'id' : 6,
+            'img' : '/static/app/img/a-10.png',
+            'date' : '10 Aug 2025',
+            'title' : "Living in the Now",
+            'desc' : "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis",
+        }
+    ]
+
+# Loop through the data and create blog entries
+for blog in blogs:
+    new_blog = Blog.objects.create(
+        id=blog['id'],
+        title=blog['title'],
+        img=blog['img'],
+    )
+    
+    new_blog.slug = slugify(new_blog.title)
+    new_blog.save()
+----------------------------------------------
+#check blog data
+-----------------------------------------------
+from App.models import Blog
+
+blogs = Blog.objects.all()
+for blog in blogs:
+    print(blog.title, blog.img, blog.slug)
+
+-------------------------------------------------
+#delete blog data
+-------------------------------------------------
+from App.models import Blog
+
+Blog.objects.all().delete()

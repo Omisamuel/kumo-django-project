@@ -1,0 +1,85 @@
+name: Deploy to Hetzner
+
+on:
+  workflow_run:
+    workflows: ["Build and Push Docker Image"]
+    types: [completed]
+    branches: [stage]
+
+jobs:
+  deploy:
+    environment: stage
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate Variables
+        run: |
+          echo "🔍 Checking required variables..."
+          [ -z "${{ secrets.HETZNER_HOST }}" ] && echo "HETZNER_HOST missing" && exit 1
+          [ -z "${{ secrets.HETZNER_USER }}" ] && echo "HETZNER_USER missing" && exit 1
+          [ -z "${{ secrets.HETZNER_SSH_KEY }}" ] && echo "HETZNER_SSH_KEY missing" && exit 1
+          echo "✅ All required vars present"
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+
+          # write private key
+          printf '%s\n' "${{ secrets.HETZNER_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+          # add host key
+          ssh-keyscan -H "${{ secrets.HETZNER_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null || true
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Verify SSH Connection
+        run: |
+          echo "🔐 Testing SSH connection..."
+          ssh -i ~/.ssh/deploy_key \
+              -o StrictHostKeyChecking=yes \
+              -o PreferredAuthentications=publickey \
+              -o PubkeyAuthentication=yes \
+              -o PasswordAuthentication=no \
+              "${{ secrets.HETZNER_USER }}@${{ secrets.HETZNER_HOST }}" \
+              'echo "✅ SSH connection successful"'
+
+      - name: List repo files (debug)
+        run: |
+          pwd
+          ls -R
+
+      - name: Debug Key Fingerprint
+        run: |
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keygen -lf ~/.ssh/deploy_key
+
+      - name: Execute Deploy Script (with retry)
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          retry_wait_seconds: 5
+          command: |
+            REGISTRY_USER=${{ secrets.REGISTRY_USER }} \
+            REGISTRY_PASSWORD=${{ secrets.REGISTRY_PASSWORD }} \
+            ssh -i ~/.ssh/deploy_key \
+              -o StrictHostKeyChecking=yes \
+              -o PreferredAuthentications=publickey \
+              -o PubkeyAuthentication=yes \
+              -o PasswordAuthentication=no \
+              "${{ secrets.HETZNER_USER }}@${{ secrets.HETZNER_HOST }}" \
+              'bash -s' < ./scripts/deploy.sh
+      
+
+      - name: Debug SSH if failure
+        if: failure()
+        run: |
+          echo "❌ SSH/Deploy failed, debugging..."
+          ls -la ~/.ssh || true
+          echo "known_hosts:"
+          cat ~/.ssh/known_hosts || true

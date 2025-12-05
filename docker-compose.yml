@@ -1,0 +1,101 @@
+services:
+  db:
+    image: postgres:16
+    container_name: kumo_db
+    environment:
+      POSTGRES_DB: "kumo_staging"
+      POSTGRES_USER: "kumo"
+      POSTGRES_PASSWORD: "kumo_staging_pw"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kumo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ghcr.io/omilabs/kumo_django:stage
+    container_name: kumo_web
+    secrets:
+      - secret_key
+    environment:
+      SECRET_KEY_FILE: /run/secrets/secret_key
+      DEBUG: "false"
+      ALLOWED_HOSTS: "stage.omilabs.de"
+    volumes:
+      - static:/app/staticfiles
+      - media:/app/media
+    command: >
+      sh -c "
+        python manage.py migrate &&
+        python manage.py collectstatic --noinput &&
+        python manage.py runserver 0.0.0.0:8000
+      "
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - app
+
+  certbot:
+    image: certbot/certbot
+    container_name: kumo_certbot
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
+      - /var/www/certbot:/var/www/certbot
+    command: certonly --webroot -w /var/www/certbot -d stage.omisam.de --non-interactive --agree-tos -m your-email@example.com
+    restart: "no"
+    networks:
+      - app
+
+  certbot-renew:
+    image: certbot/certbot
+    container_name: kumo_certbot_renew
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
+      - /var/www/certbot:/var/www/certbot
+    command: renew --webroot -w /var/www/certbot --quiet
+    entrypoint: /bin/sh -c "while true; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 86400; done"
+    restart: unless-stopped
+    networks:
+      - app
+
+  nginx:
+    image: nginx:stable-alpine
+    container_name: kumo_nginx
+    depends_on:
+      - web
+      - certbot
+    volumes:
+      - ./nginx:/etc/nginx/conf.d:ro
+      - static:/app/staticfiles:ro
+      - media:/app/media:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/certbot:/var/www/certbot:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: unless-stopped
+    networks:
+      - app
+
+secrets:
+  secret_key:
+    file: /run/kumo/secret_key
+
+volumes:
+  static:
+  media:
+  pgdata:
+
+networks:
+  app:
+    driver: bridge
