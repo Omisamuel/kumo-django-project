@@ -30,7 +30,7 @@ services:
       DEBUG: "false"
       ALLOWED_HOSTS: "stage.omilabs.de"
     volumes:
-      - static:/app/staticfiles
+      - static_volume:/app/staticfiles
       - media:/app/media
     command: >
       sh -c "
@@ -76,7 +76,7 @@ services:
       - certbot
     volumes:
       - ./nginx:/etc/nginx/conf.d:ro
-      - static:/app/staticfiles:ro
+      - static_volume:/app/staticfiles:ro
       - media:/app/media:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - /var/www/certbot:/var/www/certbot:ro
@@ -92,7 +92,7 @@ secrets:
     file: /run/kumo/secret_key
 
 volumes:
-  static:
+  static_volume:
   media:
   pgdata:
 
